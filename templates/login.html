@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+ 
+
+{% block title %}
+    Log In
+{% endblock %}
+
+ 
+
+{% block body %}
+    <h1>Sign In</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.user.label }}<br>
+            {{ form.user(class="form-control") }}<br>
+            {% for error in form.user.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.password.label }}<br>
+            {{ form.password(class="form-control") }}<br>
+            {% for error in form.password.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <div class="input-group-text">
+        <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+        </div>
+        <p>{{ form.submit(class="btn btn-primary") }}</p>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      <h2> {{messages[0]}} </h2>
+    {% endwith %}
+{% endblock %}

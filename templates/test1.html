@@ -1,0 +1,73 @@
+<<!DOCTYPE html>
+    <html>
+
+    <head>
+        <meta charset="utf-8" />
+        <title>Esri Leaflet Geocoder</title>
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+        <!-- Load Leaflet from CDN-->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet/dist/leaflet-src.js"></script>
+
+        <!-- Load Esri Leaflet from CDN -->
+        <script src="https://unpkg.com/esri-leaflet"></script>
+
+        <!-- Esri Leaflet Geocoder -->
+        <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css" />
+        <script src="https://unpkg.com/esri-leaflet-geocoder"></script>
+
+        <!-- Make the map fill the entire page -->
+
+    </head>
+
+    <body>
+        <div id="mapid" style="width: 1800px; height: 900px;"></div>
+        <script>
+
+            var x = [];
+            var lats = [];
+            var lngs = [];
+            var names = [];
+            var phones = [];
+            var addrs = [];
+            var denver = L.latLng(21.07204051307818, 105.7739627412891);
+            L.esri.Geocoding.geocode({ apikey: 'AAPKb65aab72cd59479f973c729d2fef92196V8q2dA5zfPIX5RpWTWLM5lIpTDA-reZY9JkM2kLlcKAO38g6zGFfjHZ4Dmz8DKE' }).text('sửa chữa xe máy Hà Nội').nearby(denver, 20000).run(function (err, response) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                {
+                    x.push(response.results);
+                     
+                    for (let i = 0; i < response.results.length; i++) {
+                        lats.push(response.results[i].properties.DisplayY);
+                        lngs.push(response.results[i].properties.DisplayX);
+                        names.push(response.results[i].properties.PlaceName);
+                        phones.push(response.results[i].properties.Phone);
+                        addrs.push(response.results[i].properties.Place_addr);
+                    }
+                }
+            });
+            console.log(x)
+            $("#Btn").click(function () {
+               
+                $.ajax({
+                    url: '{{url_for("getdata")}}',
+                    type: 'post',
+                    data: {
+                        lats: lats,
+                        lngs: lngs,
+                        names: names,
+                        addrs: addrs,
+                        phones: phones
+                    },
+                    success: function (res) { }
+                });
+            });
+        </script>
+
+    </body>
+
+    heheheeh
+    </html>

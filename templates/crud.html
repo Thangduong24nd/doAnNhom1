@@ -1,0 +1,231 @@
+<html>
+
+<head>
+
+    <title>CRUD</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin="">
+        </script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+
+
+    <!-- <link rel="stylesheet" href="leaflet-routing-machine.css">
+    <script src="leaflet-routing-machine.js"></script> -->
+
+
+<body>
+    <div id="mapid" style="width: 80%; height: 80%"></div>
+    <script>
+        var poslat
+        var poslng
+
+        function getLocation() {
+            if (navigator.geolocation) {
+
+                navigator.geolocation.getCurrentPosition(showPosition)
+
+            }
+            else {
+                x.innerHTML = "Geolocation không được hỗ trợ bởi trình duyệt này.";
+            }
+        }
+
+        function showPosition(position) {
+            poslat = position.coords.latitude;
+            poslng = position.coords.longitude;
+            L.marker([poslat, poslng]).addTo(mymap).bindPopup("<b>Here</b>").openPopup();
+
+
+        }
+
+        var mymap = L.map('mapid').setView([21.0690109, 105.7773098], 20);
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);
+
+
+        var myStyle1 = {
+            "color": "red",
+            "fill-color": "red",
+            "weight": 1,
+            "opacity": 0.65
+        };
+
+        var myStyle2 = {
+            "color": "black",
+            "fill-color": "green",
+            "weight": 5,
+            "opacity": 0.65
+        };
+
+        // AJAX to get data from API
+        function onEachFeature(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup("<b>ID: " + feature.properties.id + "</b><br/><b>" + feature.properties.name + "</b><br/><b>Địa chỉ:"
+                    + feature.properties.address + "</b><br/><b>Số điện thoại:" + feature.properties.phoneNum + "</b><br/><b>Giờ mở cửa:" + feature.properties.openH + "</b><br><b>Giờ đóng cửa:" + feature.properties.closeH + "</b><br><b>Số lướt vote"
+                    + feature.properties.numVote + "</b><br><b>Đánh giá:" + feature.properties.rate + "</b><br>"
+
+
+                );
+                layer.on('click', function () {
+                    document.querySelector('#form1').style.display = "block";
+                    document.querySelector('#form2').style.display = "block";
+                    document.querySelector('#form').style.display = "none";
+                    document.querySelector('#id').value = feature.properties.id;
+                    document.querySelector('#id1').value = feature.properties.id;
+                    document.querySelector('#name').value = feature.properties.name;
+                    document.querySelector('#address').value = feature.properties.address;
+                    document.querySelector('#phoneNum').value = feature.properties.phoneNum;
+                    document.querySelector('#numVote').value = feature.properties.numVote;
+                    document.querySelector('#rate').value = feature.properties.rate;
+                    document.querySelector('#openH').value = feature.properties.openH;
+                    document.querySelector('#closeH').value = feature.properties.closeH;
+                    document.querySelector('#table').value = feature.properties.table;
+                    document.querySelector('#table1').value = feature.properties.table;
+                });
+            }
+        }
+        var result = L.geoJSON([], {
+            onEachFeature: onEachFeature,
+            style: function (feature) {
+                switch (feature.properties.openH) {
+                    case 7: return myStyle1;
+                    case 2: return myStyle2;
+                }
+
+            }
+
+        }).addTo(mymap)
+
+        // AJAX to get data from API
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var rs = JSON.parse(this.responseText); // convert responseText to JSON object
+                result.addData(rs)
+
+            }
+        };
+        xmlhttp.open("GET", "http://127.0.0.1:5000/api", true);
+        xmlhttp.send();
+
+
+        var popup = L.popup();
+        function onMapClick(e) {
+            popup
+                .setLatLng(e.latlng)
+                .setContent("You clicked the map at " + e.latlng.toString())
+                .openOn(mymap);
+        }
+        // layer
+        var baseLayers = {
+            "Open Street Map": osm
+        };
+        var overlayMaps = {
+            "rs": result
+
+        };
+        L.control.layers(baseLayers, overlayMaps).addTo(mymap)
+        mymap.on('click', onMapClick);
+
+        mymap.on('click', function (e) {
+            document.querySelector('#form').style.display = "block";
+            document.querySelector('#lat').value = e.latlng.lat;
+            document.querySelector('#lng').value = e.latlng.lng;
+
+        })
+        //leaflet control
+        // L.Control.geocoder().addTo(mymap);
+        // leaflet routing 
+        // L.Routing.control(L.extend(window.lrmConfig, {
+        //     waypoints: [
+        //         L.latLng(poslat, poslng),
+        //         L.latLng(57.6792, 11.949)
+        //     ]
+
+
+        // })).addTo(mymap);
+
+        // L.Routing.control({
+        //     waypoints: [
+        //         L.latLng(21.06938, 105.77624),
+        //         L.latLng(21.06898, 105.77628)
+        //     ]
+        // }).addTo(mymap);
+
+
+    </script>
+    
+    
+    <table>
+        <tr>
+            <td>
+                <form action="{{url_for('add')}}" method="GET" id="form" style="display: none;">
+                    <input type="hidden" id="lng" name="lng">
+                    <input type="hidden" id="lat" name="lat">
+                    <label for="name">Tên:</label>
+                    <input type="text" name="name">
+                    <label for="address">Địa chỉ:</label>
+                    <input type="text" name="address">
+                    <label for="phoneNum">Số điện thoại:</label>
+                    <input type="text" name="phoneNum">
+                    <label for="numVote">Số lượt vote:</label>
+                    <input type="text" name="numVote">
+                    <label for="openH">Giờ mở cửa:</label>
+                    <input type="text" name="openH">
+                    <label for="closeH">Giờ đóng cửaa:</label>
+                    <input type="text" name="closeH">
+                    <label for="rate">Đánh giá</label>
+                    <input type="text" name="rate">
+                    <input type="submit" value="Thêm"></input>
+                </form>
+                <form action="{{url_for('update')}}" method="GET" id="form2" style="display:none">
+                    <label for="name">Tên:</label>
+                    <input type="text" name="name">
+                    <label for="address">Địa chỉ:</label>
+                    <input type="text" name="address">
+                    <label for="phoneNum">Số điện thoại:</label>
+                    <input type="text" name="phoneNum">
+                    <label for="numVote">Số lượt vote:</label>
+                    <input type="text" name="numVote">
+                    <label for="openH">Giờ mở cửa:</label>
+                    <input type="text" name="openH">
+                    <label for="closeH">Giờ đóng cửaa:</label>
+                    <input type="text" name="closeH">
+                    <label for="rate">Đánh giá</label>
+                    <input type="text" name="rate">
+                    <input type="hidden" id="id1" name="id1">
+                    
+                    <input type="submit" value="Cập nhật"></input>
+                </form>
+            </td>
+            <td>
+                <form action="{{url_for('delete')}}" method="GET" id="form1" style="display:none">
+                    <input type="hidden" id="id" name="id">
+                    <input type="submit" value="Xóa"></input>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <!-- <button onclick="search()"></button> -->
+</body>
+
+</html>
+
+</body>
+
+</html>
