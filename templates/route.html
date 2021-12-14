@@ -1,0 +1,137 @@
+<html>
+
+<head>
+
+    <title>Index</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin="">
+        </script>
+
+    <link rel="stylesheet" href="LeafletControlRoutingtoaddress.css" />
+    <script src="LeafletControlRoutingtoaddress.js"></script>
+
+
+
+
+
+<body>
+
+
+    <div id="mapid" style="width: 800px; height: 800px;"></div>
+    <script>
+        var mymap = L.map('mapid').setView([21.025546, 105.844173], 20);
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mymap);
+        var myStyle1 = {
+            "color": "red",
+            "fill-color": "red",
+            "weight": 1,
+            "opacity": 0.65
+        };
+
+        var myStyle2 = {
+            "color": "black",
+            "fill-color": "green",
+            "weight": 5,
+            "opacity": 0.65
+        };
+
+        // AJAX to get data from API
+        function onEachFeature(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup("<b>ID: " + feature.properties.id + "</b><br/><b>" + feature.properties.name + "</b><br/><b>Địa chỉ:"
+                    + feature.properties.address + "</b><br/><b>Giờ mở cửa:" + feature.properties.openH + "</b><br><b>Giờ đóng cửa:" + feature.properties.closeH + "</b><br><b>Số lướt vote"
+                    + feature.properties.numVote + "</b><br><b>Đánh giá:" + feature.properties.rate + "</b><br>"
+
+
+                );
+                layer.on('click', function (e) {
+                    document.querySelector('#id').value = feature.id;
+                    document.querySelector('#type').value = feature.properties.type;
+                });
+            }
+        }
+        var result = L.geoJSON([], {
+            onEachFeature: onEachFeature,
+            style: function (feature) {
+                switch (feature.properties.openH) {
+                    case 7: return myStyle1;
+                    case 2: return myStyle2;
+                }
+
+            }
+
+        }).addTo(mymap)
+
+        // AJAX to get data from API
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var rs = JSON.parse(this.responseText); // convert responseText to JSON object
+                result.addData(rs)
+
+            }
+        };
+        xmlhttp.open("GET", "http://127.0.0.1:5000/api", true);
+        xmlhttp.send();
+
+
+        var popup = L.popup();
+        function onMapClick(e) {
+            popup
+                .setLatLng(e.latlng)
+                .setContent("You clicked the map at " + e.latlng.toString())
+                .openOn(mymap);
+        }
+        // layer
+        var baseLayers = {
+            "Open Street Map": osm
+        };
+        var overlayMaps = {
+            "rs": result
+
+        };
+        L.control.layers(baseLayers, overlayMaps).addTo(mymap)
+        mymap.on('click', onMapClick);
+
+        mymap.on('click', function (e) {
+
+            document.querySelector('#lat').value = e.latlng.lat;
+            document.querySelector('#lng').value = e.latlng.lng;
+        })
+        //leaflet control
+
+       
+
+      
+
+        L.leafletControlRoutingtoaddress({
+            position: 'topright',
+            router: 'osrm',
+            token: '',
+            placeholder: 'Please insert your address here.',
+            errormessage: 'Address not valid.',
+            distance: 'Entfernung:',
+            duration: 'Fahrzeit',
+            target: 'Koblenz, Rheinland-Pfalz, Deutschland',
+            requesterror: '"Too Many Requests" or "Not Authorized - Invalid Token"'
+
+        }).addTo(mymap);
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>

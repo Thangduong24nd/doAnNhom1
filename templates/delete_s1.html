@@ -1,0 +1,174 @@
+<html>
+
+<head>
+
+  <title>A3</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin="">
+    </script>
+
+</head>
+
+<body>
+  <div id="mapid" style="width: 800px; height: 800px;"></div>
+  <script>
+    var mymap = L.map('mapid').setView([21.0690109, 105.7773098], 20);
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mymap);
+    var myStyle1 = {
+      "color": "red",
+      "fill-color": "red",
+      "weight": 1,
+      "opacity": 0.65
+    };
+
+    var myStyle2 = {
+      "color": "black",
+      "fill-color": "green",
+      "weight": 5,
+      "opacity": 0.65
+    };
+
+    // AJAX to get data from API
+    function onEachFeature(feature, layer) {
+      if (feature.properties) {
+        layer.bindPopup("<b>" + feature.properties.id + "</b><br/><b>" + feature.properties.ten + "</b><br/><b>"
+          + feature.properties.diachi + "</b><br/>" + feature.properties.loainha
+
+        );
+        layer.on('click', function (e) {
+          document.querySelector('#id').value = feature.properties.id;
+          document.querySelector('#type').value = feature.geometry.type;
+        });
+      }
+    }
+
+    var nhajson = L.geoJSON([], {
+      onEachFeature: onEachFeature,
+      style: function (feature) {
+        switch (feature.properties.loainha) {
+          case "house": return myStyle1;
+          case "apartments": return myStyle2;
+        }
+
+      }
+
+    }).addTo(mymap)
+    // AJAX to get data from API
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var nha = JSON.parse(this.responseText); // convert responseText to JSON object
+        nhajson.addData(nha)
+
+      }
+    };
+    xmlhttp.open("GET", "http://127.0.0.1:5000/api/nha/postGIS", true);
+    xmlhttp.send();
+
+    var iconrestaurant = L.icon({
+      iconUrl: 'data:image/png;base64,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',
+      iconSize: [28, 40],
+      iconAnchor: [22, 40],
+      popupAnchor: [3, 10]
+    });
+    var iconnightclub = L.icon({
+      iconUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTNegXjCHBMMyXeDNJXiaVFgPKI77ZG7XBzw&usqp=CAU',
+      iconSize: [28, 40],
+      iconAnchor: [22, 40],
+      popupAnchor: [3, 10]
+    });
+    var iconcafe = L.icon({
+      iconUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjyGsWH5iQImUGGbdW2jZVts3CY3jYV9X70A&usqp=CAU',
+      iconSize: [28, 40],
+      iconAnchor: [22, 40],
+      popupAnchor: [3, 10]
+    });
+    var icon = L.icon({
+      iconUrl: 'https://www.vippng.com/png/detail/454-4540872_location-clipart-symbol-small-meeting-point-icon.png',
+      iconSize: [28, 40],
+      iconAnchor: [22, 40],
+      popupAnchor: [3, 10]
+    });
+    var diemjson = L.geoJSON([], {
+      onEachFeature: onEachFeature,
+      pointToLayer: function (feature, Latlng) {
+        switch (feature.properties.loainha) {
+          case "restaurant": return L.marker(Latlng, { icon: iconrestaurant });
+          case "nightclub": return L.marker(Latlng, { icon: iconnightclub });
+          case "internet_cafe": return L.marker(Latlng, { icon: iconcafe });
+          default: return L.marker(Latlng, { icon: icon });
+        }
+      }
+
+
+    }).addTo(mymap)
+    var xmlhttp2 = new XMLHttpRequest();
+    xmlhttp2.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var diem = JSON.parse(this.responseText); // convert responseText to JSON object
+        diemjson.addData(diem)
+      }
+    };
+    xmlhttp2.open("GET", "http://127.0.0.1:5000/api/diem/postGIS", true);
+    xmlhttp2.send();
+    var xmlhttp2 = new XMLHttpRequest();
+    xmlhttp2.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var diem = JSON.parse(this.responseText); // convert responseText to JSON object
+        diemjson.addData(diem)
+      }
+    };
+    xmlhttp2.open("GET", "http://127.0.0.1:5000/api/diem/postGIS", true);
+    xmlhttp2.send();
+
+    var popup = L.popup();
+    function onMapClick(e) {
+      popup
+        .setLatLng(e.latlng)
+        .setContent("You clicked the map at " + e.latlng.toString())
+        .openOn(mymap);
+    }
+    var legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function (mymap) {
+      var div = L.DomUtil.create('div', 'info');
+      div.innerHTML += '<img style="width:30px; height:30px" src="data:image/png;base64,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">:Restaurant <br>';
+      div.innerHTML += '<img style="width:30px; height:30px" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTNegXjCHBMMyXeDNJXiaVFgPKI77ZG7XBzw&usqp=CAU">:Nightclub<br>';
+      div.innerHTML += '<img style="width:30px; height:30px" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjyGsWH5iQImUGGbdW2jZVts3CY3jYV9X70A&usqp=CAU">:Internet cafe<br>';
+      return div;
+    }
+    legend.addTo(mymap);
+
+
+
+    // layer
+    var baseLayers = {
+      "Open Street Map": osm
+    };
+    var overlayMaps = {
+      "Nha": nhajson,
+      "Diem": diemjson
+    };
+    L.control.layers(baseLayers, overlayMaps).addTo(mymap)
+    mymap.on('click', onMapClick);
+
+
+  </script>
+  <form action="{{url_for('delete_s2')}}" method="GET">
+
+    ID:<input type="text" name="id" id="id">
+    Type:<input type="text" name="type" id='type'><br>
+
+    <button>Xoá</button>
+  </form>
+</body>
+
+</html>

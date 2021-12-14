@@ -1,0 +1,81 @@
+<<!DOCTYPE html>
+    <html>
+
+    <head>
+        <meta charset="utf-8" />
+        <title>Esri Leaflet Geocoder</title>
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+        <!-- Load Leaflet from CDN-->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet/dist/leaflet-src.js"></script>
+
+        <!-- Load Esri Leaflet from CDN -->
+        <script src="https://unpkg.com/esri-leaflet"></script>
+
+        <!-- Esri Leaflet Geocoder -->
+        <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css" />
+        <script src="https://unpkg.com/esri-leaflet-geocoder"></script>
+
+        <!-- Make the map fill the entire page -->
+
+    </head>
+
+    <body>
+        <div id="mapid" style="width: 1800px; height: 900px;"></div>
+        <script>
+
+            var x = [];
+            var lats = [];
+            var lngs = [];
+            var names = [];
+            var phones = [];
+            var addrs = [];
+            var denver = L.latLng(21.07204051307818, 105.7739627412891);
+            L.esri.Geocoding.geocode({ apikey: 'AAPKb65aab72cd59479f973c729d2fef92196V8q2dA5zfPIX5RpWTWLM5lIpTDA-reZY9JkM2kLlcKAO38g6zGFfjHZ4Dmz8DKE' }).text('sửa chữa ôtô Hà Nội').nearby(denver, 20000).run(function (err, response) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                {
+                    x.push(response.results);
+                     
+                    for (let i = 0; i < response.results.length; i++) {
+                        var lats = document.createElement("input");
+                        lats.value = response.results[i].properties.DisplayY
+                        lats.type = 'text'
+                        lats.name = 'lats'
+                        var lngs = document.createElement("input");
+                        lngs.value = response.results[i].properties.DisplayX
+                        lngs.type = 'text'
+                        lngs.name = 'lngs'
+                        var phones = document.createElement("input");
+                        phones.value = response.results[i].properties.Phone
+                        phones.type = 'text'
+                        phones.name = 'phones'
+                        var names = document.createElement("input");
+                        names.value = response.results[i].properties.PlaceName
+                        names.type = 'text'
+                        names.name = 'names'
+                        var addrs = document.createElement("input");
+                        addrs.value = response.results[i].properties.Place_addr
+                        addrs.type = 'text'
+                        addrs.name = 'addrs'
+                        document.querySelector('#form1').appendChild(lats);
+                        document.querySelector('#form1').appendChild(lngs);
+                        document.querySelector('#form1').appendChild(phones);
+                        document.querySelector('#form1').appendChild(names);
+                        document.querySelector('#form1').appendChild(addrs);
+
+                    }
+                }
+            });
+            console.log(x)
+  
+        </script>
+
+    </body>
+    <form action="{{url_for('getdata')}}" method="POST" id="form1">
+        <input type="submit">
+    </form>
+    </html>
