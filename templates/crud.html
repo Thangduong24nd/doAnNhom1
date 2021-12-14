@@ -94,6 +94,7 @@
                     document.querySelector('#rate').value = feature.properties.rate;
                     document.querySelector('#openH').value = feature.properties.openH;
                     document.querySelector('#closeH').value = feature.properties.closeH;
+                    document.querySelector('#type').value = feature.properties.type;
                     document.querySelector('#table').value = feature.properties.table;
                     document.querySelector('#table1').value = feature.properties.table;
                 });
@@ -191,6 +192,8 @@
                     <input type="text" name="closeH">
                     <label for="rate">Đánh giá</label>
                     <input type="text" name="rate">
+                    <label for="type">Loại phương tiện sửa chữa</label>
+                    <input type="text" name="type">
                     <input type="submit" value="Thêm"></input>
                 </form>
                 <form action="{{url_for('update')}}" method="GET" id="form2" style="display:none">
@@ -208,6 +211,8 @@
                     <input type="text" name="closeH">
                     <label for="rate">Đánh giá</label>
                     <input type="text" name="rate">
+                    <label for="type">Loại phương tiện sửa chữa</label>
+                    <input type="text" name="type">
                     <input type="hidden" id="id1" name="id1">
                     
                     <input type="submit" value="Cập nhật"></input>

@@ -1,0 +1,196 @@
+<html>
+
+<head>
+
+    <title>Index</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin="">
+        </script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+    <script src="{{url_for('static', filename='lrm-graphhopper.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', filename='config.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', filename='Control.Geocoder.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', filename='mapbox.js')}}" type="text/javascript"></script>
+
+
+<body>
+    <div id="mapid" style="width: 100%; height: 75%"></div>
+    <script>
+        var poslatlng = [];
+
+
+        function getLocation() {
+            if (navigator.geolocation) {
+
+                navigator.geolocation.getCurrentPosition(showPosition)
+
+            }
+            else {
+                x.innerHTML = "Geolocation không được hỗ trợ bởi trình duyệt này.";
+            }
+        }
+
+        function showPosition(position) {
+
+
+            poslatlng.push(position.coords.latitude)
+            poslatlng.push(position.coords.longitude)
+            L.marker([position.coords.latitude, position.coords.longitude]).addTo(mymap).bindPopup("<b>Here</b>").openPopup();
+        }
+
+
+
+        console.log(poslatlng)
+
+        var mymap = L.map('mapid').setView([21.0690109, 105.7773098], 20);
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }
+
+        ).addTo(mymap);
+
+
+        var myStyle1 = {
+            "color": "red",
+            "fill-color": "red",
+            "weight": 1,
+            "opacity": 0.65
+        };
+
+        var myStyle2 = {
+            "color": "black",
+            "fill-color": "green",
+            "weight": 5,
+            "opacity": 0.65
+        };
+        var latlngb = [];
+
+        // AJAX to get data from API
+        function onEachFeature(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup("<b>ID: " + feature.properties.id + "</b><br/><b>" + feature.properties.name + "</b><br/><b>Địa chỉ:"
+                    + feature.properties.address + "</b><br/><b>Số điện thoại:" + feature.properties.phoneNum + "</b><br/><b>Giờ mở cửa:" + feature.properties.openH + "</b><br><b>Giờ đóng cửa:" + feature.properties.closeH + "</b><br><b>Số lướt vote"
+                    + feature.properties.numVote + "</b><br><b>Đánh giá:" + feature.properties.rate + "</b><br>"
+
+
+                );
+                layer.on('click', function (e) {
+                    latlngb.push(feature.geometry.coordinates[0])
+                    latlngb.push(feature.geometry.coordinates[1])
+                    document.querySelector('#routing').style.display = "block";
+                });
+            }
+        }
+        var oto = L.icon({
+            iconUrl: "{url_for('static', filename='icons/oto.png')}",
+            iconSize: [28, 40],
+            iconAnchor: [22, 40],
+            popupAnchor: [3, 10]
+        });
+        var xemay = L.icon({
+            iconUrl: "{url_for('static', filename='icons/xemay.png')}",
+            iconSize: [28, 40],
+            iconAnchor: [22, 40],
+            popupAnchor: [3, 10]
+        });
+        var xedap = L.icon({
+            iconUrl: "{url_for('static', filename='icons/xedap.png')}",
+            iconSize: [28, 40],
+            iconAnchor: [22, 40],
+            popupAnchor: [3, 10]
+        });
+        var result = L.geoJSON([], {
+            onEachFeature: onEachFeature,
+            style: function (feature) {
+                switch (feature.properties.type) {
+                    case 1 : return L.marker(Latlng,{ icon : xedap});
+                    case 2 : return L.marker(Latlng,{ icon : xemay});
+                    case 3 : return L.marker(Latlng,{ icon : oto});
+                }
+
+            }
+
+        }).addTo(mymap)
+
+        // AJAX to get data from API
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var rs = JSON.parse(this.responseText); // convert responseText to JSON object
+                result.addData(rs)
+
+            }
+        };
+        xmlhttp.open("GET", "http://127.0.0.1:5000/api", true);
+        xmlhttp.send();
+
+
+        var popup = L.popup();
+        function onMapClick(e) {
+            popup
+                .setLatLng(e.latlng)
+                .setContent("You clicked the map at " + e.latlng.toString())
+                .openOn(mymap);
+        }
+        // layer
+        var baseLayers = {
+            "Open Street Map": osm
+        };
+        var overlayMaps = {
+            "rs": result
+
+        };
+        L.control.layers(baseLayers, overlayMaps).addTo(mymap)
+        mymap.on('click', onMapClick);
+
+        mymap.on('click', function (e) {
+
+            document.querySelector('#lat').value = e.latlng.lat;
+            document.querySelector('#lng').value = e.latlng.lng;
+        })
+        getLocation()
+
+
+
+        function routing() {
+            var control = L.Routing.control(L.extend(window.lrmConfig, {
+                waypoints: [
+                    L.latLng(poslatlng[0], poslatlng[1]),
+                    L.latLng(latlngb[1], latlngb[0])
+                ],
+                geocoder: L.Control.Geocoder.nominatim(),
+                routeWhileDragging: true,
+                reverseWaypoints: true,
+                showAlternatives: true,
+                altLineOptions: {
+                    styles: [
+                        { color: 'black', opacity: 0.15, weight: 9 },
+                        { color: 'white', opacity: 0.8, weight: 6 },
+                        { color: 'blue', opacity: 0.5, weight: 2 }
+                    ]
+                }
+            })).addTo(mymap);
+
+            L.Routing.errorControl(control).addTo(mymap);
+        }
+    </script>
+    <button onclick="getLocation()">Vị trí của tôi</button>
+    <button onclick="routing()" name="routing" id="routing" style="display: none;">Chỉ đường</button>
+
+</body>
+
+</html>

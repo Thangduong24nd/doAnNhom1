@@ -1,13 +1,12 @@
 <html>
 
 <head>
-
     <title>Index</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-        crossorigin="" />
+        crossorigin="" /> -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <link src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
@@ -18,17 +17,129 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <!-- <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script> -->
     <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
+    <!-- <script src="leaflet-routing-machine.js"></script> -->
     <script src="{{url_for('static', filename='lrm-graphhopper.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', filename='config.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', filename='Control.Geocoder.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', filename='mapbox.js')}}" type="text/javascript"></script>
 
+    <!-- <link rel="stylesheet" href="leaflet-routing-machine.css">
+    <script src="leaflet-routing-machine.js"></script> -->
+
+    {% extends "layout.html" %}
+    {% block body %}
 
 <body>
-    <div id="mapid" style="width: 100%; height: 75%"></div>
+    
+    <div id="mapid" style="width: 100%; height: 80%;z-index: 0; border-radius: 5px;"></div>
+    <div id="cmtDiv" style="max-height: 500px; width: 20%;display: none; position: absolute;top: 75px; left:50px ; z-index: 10;background-color: aliceblue;">
+        <button onclick=closeCmt()
+            style="top:0;right:0 ;position:sticky; width:100%;background-color: rgb(93, 93, 182); border-radius: 5px;border: none;color: aliceblue; z-index: 10;">
+            Đóng bình luận
+        </button>
+        <div class="overflow-auto" style="max-height: 400px; width: 400px;" id="allCmts"
+            style="background-color:aliceblue">
+        </div>
+    </div>  
+    <script>
+        function closeCmt() {
+            document.querySelector("#showcmt").style.display = "block"
+            document.querySelector("#cmtDiv").style.display = "none"
+            document.querySelector("#allCmts").innerHTML = ""
+        }
+        function showCmt(placeId) {
+            document.querySelector("#cmtDiv").style.display = "block"
+            document.querySelector("#showcmt").style.display = "none"
+            fetch("cmtsApi1/" + placeId, {
+                method: "post"
+            }).then(function (res) {
+                return res.json();
+            }).then(function (data) {
+                console.info(data);
+                for (let i = 0; i < data.data.length; i++) {
+                    div = document.createElement("div");
+                    div2 = document.createElement("div");
+                    p = document.createElement("p");
+                    p.setAttribute("style", "margin-left:20px")
+                    p.innerHTML = "<b>" + data.data[i].author + "</b>" + "<br>" + data.data[i].texts
+                    div.appendChild(p);
+                    if (data.data[i].imgs.length > 3) {
+                        img = document.createElement('img');
+                        var src1 = "http://localhost:5000/static/img/" + data.data[i].imgs;
+                        img.src = src1;
+                        img.setAttribute("style", "width: 250px;margin-left:20px;margin-bottom:15px");
+                        div.appendChild(img);
+                    }
+                    // div.innerHTML+= "<button onclick='deleteCmt("+data.data[i].id+")' class='deletebt'>Xóa</button>"
+                    if (data.data[i].replys.length > 0) {
+                        for (let j = 0; j < data.data[i].replys.length; j++) {
+                            div4 = document.createElement('div')
+                            div4.setAttribute("style", "background-color:#faf8eb; margin-top:20px;border-radius:10px;max-width:300px;margin-left:50px");
+                            p1 = document.createElement("p");
+                            p1.setAttribute("style", "margin-left:20px")
+                            p1.innerHTML = "<b>" + data.data[i].replys[j].author + "</b>" + "<br>" + data.data[i].replys[j].texts
+                            div4.appendChild(p1)
+                            if (data.data[i].replys[j].imgs.length > 3) {
+                                img2 = document.createElement('img');
+                                var src2 = "http://localhost:5000/static/img/" + data.data[i].replys[j].imgs;
+                                img2.src = src2;
+                                img2.setAttribute("style", "width: 250px;margin-left:20px;margin-bottom:15px");
+                                div4.appendChild(img2);
+                            }
+                            div2.appendChild(div4);
+                        }
+                    }
+                    div.setAttribute("style", "background-color:#faf8eb; margin-top:20px;border-radius:10px;max-width:300px;margin-left:30px");
+                    document.querySelector("#allCmts").innerHTML += "<br>"
+                    formRep = document.createElement('form')
+                    formRep.method = 'post'
+                    formRep.action = "{{url_for('reply')}}"
+                    divRep = document.createElement("div");
+                    divRep.setAttribute("style", "float: left; margin-left: 35px");
+                    formRep.enctype = "multipart/form-data"
+                    formRep.appendChild(divRep)
+                    divRep.innerHTML += '<input   type="text" name="texts" style="width:61%; border:none; border-radius:5px;background-color:#f9faf5"placeholder=" Hãy nhập phản hồi của bạn">'
+                    input = document.createElement('input')
+                    input.type = "hidden"
+                    input.value = placeId
+                    input.name = "places_id"
+                    input1 = document.createElement('input')
+                    input1.type = "hidden"
+                    input1.value = data.data[i].id
+                    input1.name = "cmt_id"
+                    divRep.appendChild(input)
+                    divRep.appendChild(input1)
+                    divRep.innerHTML += '<input  type="file" name="imgFiles"  accept=".jpg,.png" style="width:18%;height:35px;opacity: 0.75; font-size:10px">'
+                    divRep.innerHTML += '<input  type="submit" value="Gửi" style="border:none;border-radius:5px;background-color:#7e8fcf;color:white">'
+                    div2.appendChild(formRep)
+                    document.querySelector("#allCmts").appendChild(div);
+                    document.querySelector("#allCmts").appendChild(div2);
+                }
+                document.querySelector("#allCmts").innerHTML += "<br> <br> <br>";
+                form1 = document.createElement('form')
+                form1.method = 'post'
+                form1.action = "{{url_for('comment')}}"
+                div3 = document.createElement("div");
+                div3.setAttribute("style", "float: left; margin-left: 15px");
+                form1.enctype = "multipart/form-data"
+                form1.appendChild(div3)
+                div3.innerHTML += '<input  type="text" name="texts" style="width:68% ;border:none; border-radius:5px;background-color:#f9faf5"placeholder=" Hãy nhập phản hồi của bạn">'
+                input = document.createElement('input')
+                input.type = "hidden"
+                input.value = placeId
+                input.name = "places_id"
+                div3.appendChild(input)
+                div3.innerHTML += '<input  type="file" name="imgFiles"  accept=".jpg,.png" style="width:18%;height:35px;opacity: 0.75; font-size:10px">'
+                div3.innerHTML += '<input  type="submit" value="Gửi"style="border:none;border-radius:5px;background-color:#7e8fcf;color:white";>'
+                document.querySelector("#allCmts").appendChild(form1);
+            }).catch(function (err) {
+                console.error(err)
+            })
+        }
+    </script>
     <script>
         var poslatlng = [];
 
@@ -37,7 +148,6 @@
             if (navigator.geolocation) {
 
                 navigator.geolocation.getCurrentPosition(showPosition)
-
             }
             else {
                 x.innerHTML = "Geolocation không được hỗ trợ bởi trình duyệt này.";
@@ -55,7 +165,6 @@
 
 
         console.log(poslatlng)
-
         var mymap = L.map('mapid').setView([21.0690109, 105.7773098], 20);
         var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -63,63 +172,50 @@
 
         ).addTo(mymap);
 
-
-        var myStyle1 = {
-            "color": "red",
-            "fill-color": "red",
-            "weight": 1,
-            "opacity": 0.65
-        };
-
-        var myStyle2 = {
-            "color": "black",
-            "fill-color": "green",
-            "weight": 5,
-            "opacity": 0.65
-        };
-        var latlngb = [];
-
+        var x=0
+        var y =0
         // AJAX to get data from API
         function onEachFeature(feature, layer) {
             if (feature.properties) {
                 layer.bindPopup("<b>ID: " + feature.properties.id + "</b><br/><b>" + feature.properties.name + "</b><br/><b>Địa chỉ:"
                     + feature.properties.address + "</b><br/><b>Số điện thoại:" + feature.properties.phoneNum + "</b><br/><b>Giờ mở cửa:" + feature.properties.openH + "</b><br><b>Giờ đóng cửa:" + feature.properties.closeH + "</b><br><b>Số lướt vote"
                     + feature.properties.numVote + "</b><br><b>Đánh giá:" + feature.properties.rate + "</b><br>"
-
+                    + "<button onclick='showCmt(" + feature.properties.id + ")' id='showcmt'>Xem bình luận</button>"
 
                 );
                 layer.on('click', function (e) {
-                    latlngb.push(feature.geometry.coordinates[0])
-                    latlngb.push(feature.geometry.coordinates[1])
+                    x=(parseFloat(feature.geometry.coordinates[0]))
+                    y=(parseFloat(feature.geometry.coordinates[1]))
                     document.querySelector('#routing').style.display = "block";
+                    closeCmt();
                 });
             }
         }
         var oto = L.icon({
-            iconUrl: "{url_for('static', filename='icons/oto.png')}",
-            iconSize: [28, 40],
+            iconUrl: "{{url_for('static', filename='/icons/3.png')}}",
+            iconSize: [30, 30],
             iconAnchor: [22, 40],
             popupAnchor: [3, 10]
         });
         var xemay = L.icon({
-            iconUrl: "{url_for('static', filename='icons/xemay.png')}",
-            iconSize: [28, 40],
+            iconUrl: "{{url_for('static', filename='/icons/2.png')}}",
+            iconSize: [30, 30],
             iconAnchor: [22, 40],
             popupAnchor: [3, 10]
         });
         var xedap = L.icon({
-            iconUrl: "{url_for('static', filename='icons/xedap.png')}",
-            iconSize: [28, 40],
+            iconUrl: "{{url_for('static', filename='/icons/1.png')}}",
+            iconSize: [30, 30],
             iconAnchor: [22, 40],
             popupAnchor: [3, 10]
         });
         var result = L.geoJSON([], {
             onEachFeature: onEachFeature,
-            style: function (feature) {
+            pointToLayer: function (feature, Latlng) {
                 switch (feature.properties.type) {
-                    case 1 : return L.marker(Latlng,{ icon : xedap});
-                    case 2 : return L.marker(Latlng,{ icon : xemay});
-                    case 3 : return L.marker(Latlng,{ icon : oto});
+                    case 1: return L.marker(Latlng, { icon: xedap });
+                    case 2: return L.marker(Latlng, { icon: xemay });
+                    case 3: return L.marker(Latlng, { icon: oto });
                 }
 
             }
@@ -146,6 +242,17 @@
                 .setContent("You clicked the map at " + e.latlng.toString())
                 .openOn(mymap);
         }
+        //legend
+        var legend = L.control({ position: 'bottomleft' });
+        legend.onAdd = function (mymap) {
+            var div = L.DomUtil.create('div', 'info');
+            div.innerHTML += '<img style="width:30px; height:30px" src="{{url_for('static', filename='/icons/1.png')}}">:Sửa chữa xe đạp<br>';
+            div.innerHTML += '<img style="width:30px; height:30px" src="{{url_for('static', filename='/icons/2.png')}}">:Sửa chữa xe máy<br>';
+            div.innerHTML += '<img style="width:30px; height:30px" src="{{url_for('static', filename='/icons/3.png')}}">:Sửa chữa ôtô<br>';
+            return div;
+        }
+        legend.addTo(mymap);
+
         // layer
         var baseLayers = {
             "Open Street Map": osm
@@ -162,15 +269,17 @@
             document.querySelector('#lat').value = e.latlng.lat;
             document.querySelector('#lng').value = e.latlng.lng;
         })
+
+
         getLocation()
 
-
-
+        var control
         function routing() {
-            var control = L.Routing.control(L.extend(window.lrmConfig, {
+            
+             control = L.Routing.control(L.extend(window.lrmConfig, {
                 waypoints: [
                     L.latLng(poslatlng[0], poslatlng[1]),
-                    L.latLng(latlngb[1], latlngb[0])
+                    L.latLng(y,x)
                 ],
                 geocoder: L.Control.Geocoder.nominatim(),
                 routeWhileDragging: true,
@@ -185,12 +294,30 @@
                 }
             })).addTo(mymap);
 
-            L.Routing.errorControl(control).addTo(mymap);
+            L.Routing.errorControl(control).addTo(mymap); 
+            document.querySelector('#remove').style.display = "block"; 
+            document.querySelector('#routing').style.display = "none";        
+            
         }
+        function removeControl(){
+            mymap.removeControl(control)
+            document.querySelector('#remove').style.display = "none";
+            document.querySelector('#routing').style.display = "none";    
+            
+        }
+        
+
     </script>
-    <button onclick="getLocation()">Vị trí của tôi</button>
-    <button onclick="routing()" name="routing" id="routing" style="display: none;">Chỉ đường</button>
+    <div>
+        <button onclick="getLocation()" style="border: none;border-radius:4px; background-color: rgb(138, 78, 194);color: aliceblue;width: 150px;"><b>Vị trí của tôi</b></button>
+        <button onclick="routing()" name="routing" id="routing" style="display: none;border: none;border-radius:4px; background-color: rgb(223, 95, 73);color: aliceblue;width: 150px"><b>Chỉ đường</b> </button>
+        <button onclick="removeControl()" name="remove" id="remove" style="display: none;border: none;border-radius:4px; background-color: rgb(49, 135, 133);color: aliceblue;width: 150px"><b>Xóa đường</b> </button>
+
+    </div>
+
+        {% endblock %}
 
 </body>
+
 
 </html>

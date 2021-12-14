@@ -12,126 +12,12 @@ from datetime import *
 from datetime import date
 from flask.json import jsonify
 import json
-# import googlemaps
-# import pprint
-# @app.route("/api/v1/geom")
-# def postGIS_api_geom():
-#     """Return geom column"""
-#     nhaGeoms = db.session.query(func.ST_AsGeoJSON(func.ST_Transform\
-#     (Nha.geom,4326)).label('geometry')).all()
-#     nhaFeature=[]
-#     for nhaGeom in nhaGeoms:
-#         geometry_temp = json.loads(nhaGeom.geometry)
-#         nhaFeature.append(geometry_temp)
-#     return jsonify({
-#                 "features": nhaFeature
-#     })
-# @app.route("/api/nha/postGIS")
-# def postGIS_api():
-#     """Return feature in nha table"""
- 
-#     nhas = db.session.query( Nha.id,Nha.diachi, Nha.loainha, Nha.sotang,Nha.name,Nha.ten,\
-#     func.ST_AsGeoJSON(func.ST_Transform(Nha.geom,4326)).label('geometry')).all()
-#     nhaFeature=[]
-#     for nha in nhas:
-#         properties_temp = {
-#             "diachi": nha.diachi,
-#             "loainha": nha.loainha,
-#             "sotang": nha.sotang,
-#             "id": nha.id,
-#             "name":nha.name,
-#             "ten":nha.ten
-#         }
-#         geometry_temp = json.loads(nha.geometry)
-#         feature = {
-#             "type": "Feature",
-#             "properties": properties_temp,
-#             "geometry": geometry_temp
-#         }
-#         nhaFeature.append(feature)
- 
-#     return jsonify({
-#                 #"type":"FeatureCollection",
-#                 "features": nhaFeature
- 
-#         })
-
-# @app.route("/add_s1", methods=["GET","POST"])
-# def add_s1():
-#     return render_template("add_s1.html")
-# @app.route("/add_s2", methods=["GET","POST"])
-# def add_s2():
-#     # id= request.args.get('id')
-#     name= request.args.get('name')
-#     ten= request.args.get('ten')
-#     diachi= request.args.get('diachi')
-#     loainha= request.args.get('loainha')
-#     sotang= request.args.get('sotang')
-#     lat=request.args.get('lat')
-#     lng=request.args.get('lng')
-#     geom=func.ST_GeomFromText(f'POINT({lng} {lat})',4326)
-#     new = Diem(name=name,ten=ten,diachi=diachi,loainha=loainha,sotang=sotang ,geom=geom)
-#     db.session.add(new)
-#     db.session.commit()
-#     return render_template('ok.html')
-# @app.route("/delete_s1", methods=["GET","POST"])
-# def delete_s1():
-#     return render_template("delete_s1.html")
-# @app.route("/delete_s2", methods=["GET","POST"])
-# def delete_s2():
-#     id=request.args.get('id')
-#     type=request.args.get('type')
-#     if (type=="Point"):
-#         delete = Diem.query.get(id)
-#         db.session.delete(delete)
-#         db.session.commit()       
-#     if (type=="MultiPolygon"):
-#         delete = Nha.query.get(id)
-#         db.session.delete(delete)
-#         db.session.commit()
-#     return render_template('ok.html')
-# @app.route("/update_s1",methods=["GET","POST"])
-# def update_s1():
-#     return render_template('update.html')
-# @app.route("/update_s2",methods=["GET","POST"])
-# def update_s2():
-#     id=request.args.get('id')
-#     type=request.args.get('type')
-#     name=request.args.get('name')
-#     ten=request.args.get('ten')
-#     diachi=request.args.get('diachi')
-#     loainha=request.args.get('loainha')
-#     sotang=request.args.get('sotang')
-#     if (type=="Point"):
-#         f=Diem.query.get(id)
-#         f.name=name
-#         f.ten=ten
-#         f.diachi=diachi
-#         f.loainha=loainha
-#         f.sotang=sotang
-#         db.session.commit()
-#     if (type=="MultiPolygon"):
-#         f=Nha.query.get(id)
-#         f.name=name
-#         f.ten=ten
-#         f.diachi=diachi
-#         f.loainha=loainha
-#         f.sotang=sotang
-#         db.session.commit()
-#     return render_template('ok.html')
-# @app.route("/search",methods=["GET","POST"])
-# def search():
-#     return render_template('searchv2.html')   
-# @app.route("/apiplace", methods=["GET","POST"])
-# def apiplaces():
-#     API_KEY= 'AIzaSyDpuhPAXBFKTzK1P7n9vSW87mZtZBSG408'
-#     gmaps=googlemaps.Client(key = API_KEY)
-#     ketqua = gmaps.places_nearby(location='20.3155733,106.2786937', radius=40000,open_now=False,type='car_repair')
-#     return jsonify({
-#                ketqua:ketqua
- 
-#         })
-
+import os
+from werkzeug.utils import secure_filename
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}          
 @app.route("/getdata1")
 def getdata1():
     return render_template("test2.html") 
@@ -149,14 +35,14 @@ def getdata():
         phone=phones[i]
         name=names[i]
         geom=func.ST_GeomFromText(f'POINT({lng} {lat})',4326)
-        place = places(name=name,address=addr,phoneNum=phone,numVote=0,rate=0,openH=7,closeH=23,geom=geom,type=3)
+        place = places(name=name,address=addr,phoneNum=phone,numVote=0,rate=0,openH=7,closeH=23,geom=geom,type=2)
         db.session.add(place)
         db.session.commit()
         
     return render_template('a.html')
 @app.route("/api")
 def postGIS_api2():
-    apis = db.session.query( places.id,places.name,places.phoneNum,places.address, places.numVote,places.rate,places.openH,places.type,places.closeH,\
+    apis = db.session.query( places.id,places.type,places.name,places.phoneNum,places.address, places.numVote,places.rate,places.openH,places.closeH,\
     func.ST_AsGeoJSON(func.ST_Transform(places.geom,4326)).label('geometry')).all()
     rs =[]
     for api in apis:
@@ -169,7 +55,7 @@ def postGIS_api2():
             "rate":api.rate,
             "openH" :api.openH,
             "closeH" : api.closeH,
-            "type":api.type
+            "type" : api.type
         }
         geometry_temp = json.loads(api.geometry)
         
@@ -187,15 +73,12 @@ def postGIS_api2():
 @app.route("/index")
 def  index():
     return render_template("index.html")
-@app.route("/index2")
-def  index2():
-    return render_template("testrouting.html")   
 @app.route("/crud")
 def crud():
     return render_template("crud.html")
 @app.route("/add", methods=["GET","POST"])
 def add():
-    # id= request.args.get('id')
+    type= request.args.get('type')
     name= request.args.get('name')
     address= request.args.get('address')
     phoneNum= request.args.get('phoneNum')
@@ -206,7 +89,7 @@ def add():
     lat=request.args.get('lat')
     lng=request.args.get('lng')
     geom=func.ST_GeomFromText(f'POINT({lng} {lat})',4326)
-    new = places(name=name,address=address,phoneNum=phoneNum,numVote=numVote,rate=rate,openH=openH,closeH=closeH,geom=geom)
+    new = places(name=name,address=address,phoneNum=phoneNum,numVote=numVote,rate=rate,openH=openH,closeH=closeH,geom=geom,type=type)
     db.session.add(new)
     db.session.commit()
     return render_template('ok.html')
@@ -220,6 +103,7 @@ def delete():
 @app.route("/update",methods=["GET","POST"])
 def update():
     id=request.args.get('id1')  
+    type=request.args.get('type')  
     name=request.args.get('name')
     address=request.args.get('address')
     phoneNum=request.args.get('phoneNum')
@@ -235,11 +119,9 @@ def update():
     f.rate=rate
     f.openH=openH
     f.closeH=closeH
+    f.type=type
     db.session.commit()
     return render_template('ok.html')
-
-
-
 @app.route("/signUp",methods=['POST','GET'])
 def signUp():
     form = signUpForm()
@@ -263,27 +145,126 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user)
-        flash('Đăng nhập thành công')
         return redirect('index')
     return render_template('login.html', form=form)
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect('login')
 @app.route("/comment_s1")
 def comment_s1():
+    
     return render_template("addcomment.html")
 @app.route("/comment",methods=['GET', 'POST'])
+@login_required
 def comment():
+    if request.method == 'POST':
+        file = request.files['imgFiles']
+        if file.filename == '':
+            imgs ='' 
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            imgs= filename 
     places_id= int(request.form.get('places_id'))
     texts= request.form.get('texts')
-    imgs=request.form.get('imgs')
     comment = Comments(user_id=current_user.get_id(),places_id=places_id,texts=texts,imgs=imgs)
     db.session.add(comment)
     db.session.commit()
-    return render_template("index.html",title='Index')
+    return redirect(url_for('index'))
 @app.route("/reply",methods=['GET', 'POST'])
+@login_required
 def reply():
+    if request.method == 'POST':
+        file = request.files['imgFiles']
+        if file.filename == '':
+            imgs ='' 
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            imgs=  filename      
     cmt_id= request.form.get("cmt_id")
     cmt= Comments.query.get(cmt_id)
     texts= request.form.get('texts')
-    imgs=request.form.get('imgs')
     db.session.add(cmt.reply(texts,imgs,current_user.get_id()))
     db.session.commit()
-    return render_template("index.html",title='Index')
+    return redirect(url_for('index'))
+@app.route('/cmtsApi', methods=['GET','POST'])
+def cmtsApi():
+    cmts= db.session.query(Comments.id,Comments.texts,Comments.imgs,Comments.reply_id,Users.user).filter(Comments.user_id==Users.id).all()  
+    orgs=[]
+    reps=[]
+    data=[]
+    for cmt in cmts:
+        if(cmt.reply_id==0):
+            orgs.append(cmt)  
+        else:
+            reps.append(cmt)      
+    for org in orgs:
+        replys=[]
+        for rep in reps:
+            if rep.reply_id==org.id:  
+                replys.append({
+            "author": rep.user,        
+            "id": rep.id,
+            "texts":rep.texts,
+            "imgs": rep.imgs,
+                })        
+        cmtOrg={
+            "author": org.user,
+            "id": org.id,
+            "texts":org.texts,
+            "imgs": org.imgs,
+            "replys": replys
+        } 
+        data.append(cmtOrg)             
+    return jsonify({
+                "data": data
+ 
+        })  
+@app.route('/cmtsApi1/<int:id>', methods=['GET','POST'])
+def cmtsApi1(id):
+    id=int(id)
+    cmts= db.session.query(Comments.id,Comments.texts,Comments.imgs,Comments.reply_id,Users.user).filter(and_(Comments.user_id==Users.id ,Comments.places_id==id)).all()  
+    orgs=[]
+    reps=[]
+    data=[]
+    for cmt in cmts:
+        if(cmt.reply_id==0):
+            orgs.append(cmt)  
+        else:
+            reps.append(cmt)      
+    for org in orgs:
+        replys=[]
+        for rep in reps:
+            if rep.reply_id==org.id:  
+                replys.append({
+            "author": rep.user,        
+            "id": rep.id,
+            "texts":rep.texts,
+            "imgs": rep.imgs,
+                })        
+        cmtOrg={
+            "author": org.user,
+            "id": org.id,
+            "texts":org.texts,
+            "imgs": org.imgs,
+            "replys": replys
+        } 
+        data.append(cmtOrg)             
+    return jsonify({
+                "data": data
+        })
+@app.route("/ttest")
+def ttest():
+    return render_template("ttest.html")    
+@app.route('/deleteCmt/<int:id>', methods=['GET','POST'])
+def deleteCmt(id):
+    cmt=Comments.query.get(id)
+    db.session.delete(cmt) 
+    db.session.commit()
+    replys=Comments.query.filter(Comments.reply_id==id).all()
+    for reply in replys:
+        db.session.delete(reply) 
+        db.session.commit()
+    return redirect(url_for('ttest'))

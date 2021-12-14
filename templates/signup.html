@@ -1,40 +1,59 @@
 {% extends "layout.html" %}
 
+
+
 {% block title %}
-    Sign Up
+Log In
 {% endblock %}
 
- 
+
 
 {% block body %}
-    <h1>Sign up new user</h1>
-    <form action="" method="post">
-      {{ form.hidden_tag() }}
-      <p>
-          {{ form.user.label }}<br>
-          {{ form.user }}<br>
-          {% for error in form.user.errors %}
-          <span style="color: red;">[{{ error }}]</span>
-          {% endfor %}
-      </p>
-      <p>
-          {{ form.password.label }}<br>
-          {{ form.password }}<br>
-          {% for error in form.password.errors %}
-          <span style="color: red;">[{{ error }}]</span>
-          {% endfor %}
-      </p>
-      <p>
-          {{ form.rePassword.label }}<br>
-          {{ form.rePassword }}<br>
-          {% for error in form.rePassword.errors %}
-          <span style="color: red;">[{{ error }}]</span>
-          {% endfor %}
-      </p>
-      <p>{{ form.submit() }}</p>
+<div
+    style="background-image: url('/static/background2.jpg'); background-size: cover; background-repeat: no-repeat; min-height: 990px; top: 0;">
+    <br>
+    <div class="container" style="background-color:  aliceblue;min-height: 500px; margin-top: 10vh;  border-radius: 15px; max-width: 420px;
+box-shadow:0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); position: fixed;margin-left: 15vw; ;">
+        <div style="margin:100px 80px;min-height: 150px;">
+            <h3 style="text-align: center; color: #7042ed;">Sign up new user</h3>
+            <hr>
+            <form action="" method="post">
+                {{ form.hidden_tag() }}
+                <p>
+                    {{ form.user.label }}
+                    {{ form.user (class="form-control" ,placeholder="UserID")}}
+                    {% for error in form.user.errors %}
+                    <span style="color: red;">{{ error }}</span>
+                    {% endfor %}
+                </p>
+                <p>
+                    {{ form.password.label }}
+                    {{ form.password (class="form-control" ,placeholder="password")}}
+                    {% for error in form.password.errors %}
+                    <span style="color: red;">{{ error }}</span>
+                    {% endfor %}
+                </p>
+                <p>
+                    {{ form.rePassword.label }}
+                    {{ form.rePassword (class="form-control" ,placeholder="Retype your password")}}
+                    {% for error in form.rePassword.errors %}
+                    <span style="color: red;">{{ error }}</span>
+                    {% endfor %}
+                </p>
+                <p style="text-align: center;">{{ form.submit(class="btn btn-primary",style="background-color:#7042ed;
+                    border: none") }}
+                    <a href="{{url_for('login')}}" style="color:#7042ed;">Login</a></p>
 
- 
 
 
-    </form>
+
+
+            </form>
+        </div>
+        {% with messages = get_flashed_messages() %}
+        <h2> {{messages[0]}} </h2>
+        {% endwith %}
+    </div>
+
+</div>
 {% endblock %}

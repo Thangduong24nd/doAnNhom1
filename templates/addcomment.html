@@ -8,17 +8,16 @@
 
 {% block body %}
     <h1>add a comment Test1 </h1>
-    
-    <form action="{{url_for('comment')}}" method="post">
+    <form action="{{url_for('comment')}}" method="post" enctype="multipart/form-data">
      <input type="text" name='texts'>
      <input type="text" name="places_id" id="">
-     <input type="text" name="imgs" id="">
+     <input type="file" name="imgFiles" id="imgFiles" accept=".jpg,.png">
      <input type="submit" value="gửi">
     </form>
-    <form action="{{url_for('reply')}}" method="post">
+    <form action="{{url_for('reply')}}" method="post" enctype="multipart/form-data">
         <input type="text" name='texts'>
         <input type="text" name="places_id" >
-        <input type="text" name="imgs" >
+        <input type="file" name="imgFiles" id="imgFiles" accept=".jpg,.png">
         <input type="text" name="cmt_id" >
         <input type="submit" value="gửi">
        </form>

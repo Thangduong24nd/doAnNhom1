@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <script>
+        function deleteCmt(id){
+            fetch("deleteCmt/"+id,{
+                method:"post"
+            })
+        }
+    </script>
+    <script>
+        function showCmt(placeId) {
+            fetch("cmtsApi1/" + placeId, {
+                method: "post"
+            }).then(function (res) {
+                return res.json();
+            }).then(function (data) {
+                console.info(data);
+                for (let i = 0; i < data.data.length; i++) {
+                    div = document.createElement("div");
+                    div2 = document.createElement("div");
+                    p = document.createElement("p");
+                    p.setAttribute("style", "margin-left:20px")
+                    p.innerHTML = "<b>" + data.data[i].author + "</b>" + "<br>" + data.data[i].texts
+                    div.appendChild(p);
+                    if (data.data[i].imgs.length > 3) {
+                        img = document.createElement('img');
+                        var src1 = "http://localhost:5000/static/img/" + data.data[i].imgs;
+                        img.src = src1;
+                        img.setAttribute("style", "width: 250px;margin-left:20px;margin-bottom:15px");
+                        div.appendChild(img);
+                    }
+                    // div.innerHTML+= "<button onclick='deleteCmt("+data.data[i].id+")' class='deletebt'>Xóa</button>"
+                    if (data.data[i].replys.length > 0) {
+                        for (let j = 0; j < data.data[i].replys.length; j++) {
+                            div4 = document.createElement('div')
+                            div4.setAttribute("style", "background-color:#faf8eb; margin-top:20px;border-radius:10px;max-width:300px;margin-left:50px");
+                            p1 = document.createElement("p");
+                            p1.setAttribute("style", "margin-left:20px")
+                            p1.innerHTML = "<b>" + data.data[i].replys[j].author + "</b>" + "<br>" + data.data[i].replys[j].texts
+                            div4.appendChild(p1)
+                            if (data.data[i].replys[j].imgs.length > 3) {
+                                img2 = document.createElement('img');
+                                var src2 = "http://localhost:5000/static/img/" + data.data[i].replys[j].imgs;
+                                img2.src = src2;
+                                img2.setAttribute("style", "width: 250px;margin-left:20px;margin-bottom:15px");
+                                div4.appendChild(img2);
+                            }
+                            div2.appendChild(div4);
+                        }
+                    }
+                    div.setAttribute("style", "background-color:#faf8eb; margin-top:20px;border-radius:10px;max-width:300px;margin-left:30px");
+                    document.querySelector("#allCmts").innerHTML += "<br>"
+                    formRep = document.createElement('form')
+                    formRep.method = 'post'
+                    formRep.action = "{{url_for('reply')}}"
+                    divRep = document.createElement("div");
+                    divRep.setAttribute("style", "float: left; margin-left: 35px");
+                    formRep.enctype = "multipart/form-data"
+                    formRep.appendChild(divRep)
+                    divRep.innerHTML += '<input   type="text" name="texts" style="width:61%; border:none; border-radius:5px;background-color:#f9faf5"placeholder=" Hãy nhập phản hồi của bạn">'
+                    input = document.createElement('input')
+                    input.type = "hidden"
+                    input.value = placeId
+                    input.name = "places_id"
+                    input1 = document.createElement('input')
+                    input1.type = "hidden"
+                    input1.value = data.data[i].id
+                    input1.name = "cmt_id"
+                    divRep.appendChild(input)
+                    divRep.appendChild(input1)
+                    divRep.innerHTML += '<input  type="file" name="imgFiles"  accept=".jpg,.png" style="width:18%;height:35px;opacity: 0.75; font-size:10px">'
+                    divRep.innerHTML += '<input  type="submit" value="Gửi" style="border:none;border-radius:5px;background-color:#7e8fcf;color:white">'
+                    div2.appendChild(formRep)
+                    document.querySelector("#allCmts").appendChild(div);
+                    document.querySelector("#allCmts").appendChild(div2);
+                }
+                document.querySelector("#allCmts").innerHTML += "<br> <br> <br>";
+                form1 = document.createElement('form')
+                form1.method = 'post'
+                form1.action = "{{url_for('comment')}}"
+                div3 = document.createElement("div");
+                div3.setAttribute("style", "float: left; margin-left: 15px");
+                form1.enctype = "multipart/form-data"
+                form1.appendChild(div3)
+                div3.innerHTML += '<input  type="text" name="texts" style="width:68% ;border:none; border-radius:5px;background-color:#f9faf5"placeholder=" Hãy nhập phản hồi của bạn">'
+                input = document.createElement('input')
+                input.type = "hidden"
+                input.value = placeId
+                input.name = "places_id"
+                div3.appendChild(input)
+                div3.innerHTML += '<input  type="file" name="imgFiles"  accept=".jpg,.png" style="width:18%;height:35px;opacity: 0.75; font-size:10px">'
+                div3.innerHTML += '<input  type="submit" value="Gửi"style="border:none;border-radius:5px;background-color:#7e8fcf;color:white";>'
+                document.querySelector("#allCmts").appendChild(form1);
+            }).catch(function (err) {
+                console.error(err)
+            })
+        }
+    </script>
+</body>
+<button onclick="showCmt(2)"></button>
+<div id="cmtDiv" style="max-height: 500px; width: 400px;"> <button onclick=closeCmt() style="top:0;right:0 ;position:sticky; width:100%;background-color: rgb(93, 93, 182); border-radius: 5px;border: none;color: aliceblue; z-index: 10;">
+    Đóng bình luận
+</button>
+<div class="overflow-auto" style="max-height: 500px; width: 400px;" id="allCmts"style="background-color:aliceblue">
+
+</div>
+</div>
+
+</html>

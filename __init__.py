@@ -7,6 +7,8 @@ from flask_login import LoginManager
 
 app = Flask(__name__)
 app.config.from_object(Config)
+UPLOAD_FOLDER = 'C:/Users/ThangDuong/virtualenv/WebGis/app/static/img'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db= SQLAlchemy(app)
 migrate = Migrate(app,db)
 login=LoginManager(app)
