@@ -159,35 +159,42 @@ def comment_s1():
 @login_required
 def comment():
     if request.method == 'POST':
+        imgs=''
         file = request.files['imgFiles']
+        places_id= int(request.form.get('places_id'))
+        texts= request.form.get('texts')
+        comment = Comments(user_id=current_user.get_id(),places_id=places_id,texts=texts,imgs=imgs)
+        db.session.add(comment)
+        db.session.commit()
         if file.filename == '':
-            imgs ='' 
+            comment.imgs ='' 
         if file and allowed_file(file.filename):
+            file.filename=str(comment.id)+".png"
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            imgs= filename 
-    places_id= int(request.form.get('places_id'))
-    texts= request.form.get('texts')
-    comment = Comments(user_id=current_user.get_id(),places_id=places_id,texts=texts,imgs=imgs)
-    db.session.add(comment)
-    db.session.commit()
+            comment.imgs= filename 
+        db.session.commit()
     return redirect(url_for('index'))
 @app.route("/reply",methods=['GET', 'POST'])
 @login_required
 def reply():
     if request.method == 'POST':
+        imgs=''
         file = request.files['imgFiles']
+        cmt_id= request.form.get("cmt_id")
+        comment= Comments.query.get(cmt_id)
+        texts= request.form.get('texts')
+        db.session.add(comment.reply(texts,imgs,current_user.get_id()))
+        db.session.commit()
         if file.filename == '':
-            imgs ='' 
+            comment.imgs ='' 
         if file and allowed_file(file.filename):
+            file.filename=str(comment.id)+".png"
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            imgs=  filename      
-    cmt_id= request.form.get("cmt_id")
-    cmt= Comments.query.get(cmt_id)
-    texts= request.form.get('texts')
-    db.session.add(cmt.reply(texts,imgs,current_user.get_id()))
-    db.session.commit()
+            comment.imgs= filename 
+        db.session.commit()    
+
     return redirect(url_for('index'))
 @app.route('/cmtsApi', methods=['GET','POST'])
 def cmtsApi():
